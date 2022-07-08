@@ -13,7 +13,7 @@ SECRET_KEY = 'django-insecure-g+qjg0i2m2f(_ht-51!z^#phzf=($j4=ewulz0#r793cogqz0g
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['videolinkdownloader.herokuapp.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['videodownloading.herokuapp.com', 'localhost', '127.0.0.1']
 
 
 # Application definition

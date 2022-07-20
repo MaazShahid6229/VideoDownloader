@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import pyshorteners as pyshorteners
 import youtube_dl
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -14,16 +15,28 @@ def get_facebook_video(url):
         download_url_audio = dict()
         download_url_video = dict()
         formats = url['entries'][0]['formats']
-        print(formats)
         for format in formats:
             if 'height' and 'width' in format:
                 if format['height'] is None and format['width'] is None:
                     audio_quality = format['format'].split()
-                    download_url_audio[audio_quality[2]] = format['url']
+                    type_tiny = pyshorteners.Shortener()
+                    short_url = type_tiny.tinyurl.short(format['url'])
+                    download_url_audio[audio_quality[2]] = short_url
+            if 'quality' in format:
+                type_tiny = pyshorteners.Shortener()
+                short_url = type_tiny.tinyurl.short(format['url'])
+                if format['format_id'] == 'sd':
+                    download_url_video['480'] = short_url
+                elif format['format_id'] == 'hd':
+                    download_url_video['720'] = short_url
+                else:
+                    download_url_video['high quality'] = short_url
 
-                elif format['height'] is not None and format['width'] is not None:
-                    video_quality = format['format'].split()
-                    download_url_video[video_quality[2]] = format['url']
+                # elif format['height'] is not None and format['width'] is not None:
+                #     video_quality = format['format'].split()
+                #     type_tiny = pyshorteners.Shortener()
+                #     short_url = type_tiny.tinyurl.short(format['url'])
+                #     download_url_video[video_quality[2]] = short_url
         download_url['audio_urls'] = download_url_audio
         download_url['video_urls'] = download_url_video
         return download_url
@@ -52,7 +65,9 @@ def get_instagram_video(url):
         download_url = dict()
         for format in formats:
             video_quality = format['format'].split()
-            download_url[video_quality[2]] = format['url']
+            type_tiny = pyshorteners.Shortener()
+            short_url = type_tiny.tinyurl.short(format['url'])
+            download_url[video_quality[2]] = short_url
         download_url['audio_urls'] = dict()
     return download_url
 
@@ -63,6 +78,7 @@ def get_youtube_video(url):
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         url = ydl.extract_info(url, download=False)
         formats = url['formats']
+        print(url)
         download_url = dict()
         download_url_audio = dict()
         download_url_video = dict()
@@ -70,11 +86,21 @@ def get_youtube_video(url):
 
             if format['height'] is None and format['width'] is None:
                 audio_quality = format['format'].split()
-                download_url_audio[audio_quality[0]] = format['url']
+                type_tiny = pyshorteners.Shortener()
+                short_url = type_tiny.tinyurl.short(format['url'])
+                download_url_audio[audio_quality[0]] = short_url
 
-            elif format['height'] is not None and format['width'] is not None:
+            elif format['asr'] is not None and format['height'] is not None:
                 video_quality = format['format'].split()
-                download_url_video[video_quality[2]] = format['url']
+                type_tiny = pyshorteners.Shortener()
+                short_url = type_tiny.tinyurl.short(format['url'])
+                download_url_video[video_quality[2]] = short_url
+
+            # elif format['height'] is not None and format['width'] is not None:
+            #     video_quality = format['format'].split()
+            #     type_tiny = pyshorteners.Shortener()
+            #     short_url = type_tiny.tinyurl.short(format['url'])
+            #     download_url_video[video_quality[2]] = short_url
         download_url['audio_urls'] = download_url_audio
         download_url['video_urls'] = download_url_video
     return download_url
@@ -84,12 +110,14 @@ def get_youtube_video(url):
 def get_twitter_video(url):
     ydl_opts = {'nocheckcertificate': True}
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        url = ydl.extract_info(url, download=False)
+        url = ydl.extract_info(url, download=True)
         formats = url['formats']
         download_url = dict()
         for format in formats:
             video_quality = format['format'].split()
-            download_url[video_quality[2]] = format['url']
+            type_tiny = pyshorteners.Shortener()
+            short_url = type_tiny.tinyurl.short(format['url'])
+            download_url[video_quality[2]] = short_url
         download_url['audio_urls'] = dict()
     return download_url
 
@@ -102,7 +130,9 @@ def get_snackvideo_video(url):
         formats = url['formats']
         download_url = dict()
         for format in formats:
-            download_url[str(format['height']) + '*' + str(format['width'])] = format['url']
+            type_tiny = pyshorteners.Shortener()
+            short_url = type_tiny.tinyurl.short(format['url'])
+            download_url[str(format['height']) + '*' + str(format['width'])] = short_url
         download_url['audio_urls'] = dict()
     return download_url
 
@@ -113,7 +143,7 @@ def video_download(request):
         response = ''
         if request.method == 'GET':
             url = request.data.get('url')
-            if 'facebook.com' in url:
+            if 'facebook.com' in url or 'fb.watch' in url:
                 response = get_facebook_video(url)
             elif 'instagram.com' in url:
                 response = get_instagram_video(url)

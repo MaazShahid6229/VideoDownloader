@@ -103,7 +103,7 @@ def video_download(request):
             url = request.data.get('url')
             ydl_opts = {'nocheckcertificate': True}
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                url_response = ydl.extract_info(url, download=True)
+                url_response = ydl.extract_info(url, download=False)
                 response = url_data_fetcher(url_response)
             return Response({'data': response}, status=status.HTTP_200_OK)
     except Exception as e:
